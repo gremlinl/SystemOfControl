@@ -7,9 +7,13 @@ import subprocess
 import ctypes
 import sys
 
-# ================= CONFIG =================
+if getattr(sys, 'frozen', False):
+    # Папка, где лежит скомпилированный serv.exe
+    BASE_PATH = os.path.dirname(sys.executable)
+else:
+    # Папка обычного скрипта serv.py
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_PATH, "serv.conf")
 
 def show_error(message):
